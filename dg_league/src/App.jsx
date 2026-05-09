@@ -52,7 +52,7 @@ function App() {
       </header>
 
       {/* Contenedor Principal con max-width para desktop pero pensado en movil */}
-      <main className="max-w-md mx-auto px-4 w-full">
+      <main className="mx-auto w-full px-4 max-w-md md:max-w-5xl lg:max-w-7xl">
         {renderView()}
       </main>
 

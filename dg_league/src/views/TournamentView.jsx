@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 export default function TournamentView({ tournament }) {
     const { data, getStandings, updateMatchScore, updateKnockoutScore } = tournament
-  const { groups, matches, knockout } = data
+  const { matches, knockout } = data
 
   const [activeGroup, setActiveGroup] = useState('A')
 

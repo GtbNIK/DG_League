@@ -3,8 +3,10 @@ import { useTournament } from './hooks/useTournament'
 import BottomNav from './components/BottomNav'
 import SetupView from './views/SetupView'
 import TournamentView from './views/TournamentView'
+import PredictionsView from './views/PredictionsView'
 import RulesView from './views/RulesView'
 import LoserCardsView from './views/LoserCardsView'
+import AchievementsView from './views/AchievementsView'
 
 function App() {
   const tournament = useTournament()
@@ -22,9 +24,13 @@ function App() {
       case 0:
         return <TournamentView tournament={tournament} />
       case 1:
-        return <RulesView tournament={tournament} />
+        return <PredictionsView tournament={tournament} />
       case 2:
+        return <RulesView tournament={tournament} />
+      case 3:
         return <LoserCardsView />
+      case 4:
+        return <AchievementsView tournament={tournament} />
       default:
         return <TournamentView tournament={tournament} />
     }

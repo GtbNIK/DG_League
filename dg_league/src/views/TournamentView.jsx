@@ -136,7 +136,7 @@ export default function TournamentView({ tournament }) {
 
       {/* Knockout Stage */}
       {activeGroup === 'KO' && (
-        <div>
+        <div className="md:h-[calc(100vh-240px)] md:flex md:flex-col md:justify-center">
           <div className="glass-panel p-4 mb-20 bg-emerald-950/20 md:hidden h-min-20 h-max-30">
             <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-400 mb-6 text-center">Cuadro Eliminatorio</h3>
             <div className="space-y-6">
@@ -157,7 +157,8 @@ export default function TournamentView({ tournament }) {
             </div>
           </div>
 
-          <div className="hidden md:block relative glass-panel p-6 bg-emerald-950/20 md:h-[calc(100vh-240px)] overflow-auto">
+          {/* Altura dinamica: el panel mide lo que mide el bracket, sin espacio vacio sobrante */}
+          <div className="hidden md:block relative glass-panel p-6 bg-emerald-950/20 h-fit">
             <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-400 mb-6 text-center">Cuadro Eliminatorio</h3>
             <div className="grid grid-cols-3 gap-6 items-center relative z-30">
                 <div className="flex flex-col gap-6">

@@ -6,14 +6,32 @@
   --color-slate-950: #020617;
   --color-emerald-400: #34d399;
   --color-emerald-500: #10b981;
+
+  /* La Arena Nocturna (DESIGN.md): paleta del fondo vivo y superficies sólidas */
+  --color-arena: #050a12;
+  --color-surface: #0b1626;
+  --color-surface-raised: #122036;
+  --color-line: #1b2a45;
+  --color-ink: #f1f5f9;
+  --color-muted: #8fa6c4;
+
+  /* Pareja tipográfica: Space Grotesk (títulos y cifras) + Montserrat (texto) */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-sans: "Montserrat", system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-slate-950 text-white min-h-screen font-sans;
+    @apply bg-arena text-white min-h-screen font-sans;
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Superficie de selección con la voz del sistema, no del navegador */
+  ::selection {
+    background: rgba(16, 185, 129, 0.35);
+    color: #f1f5f9;
   }
 }
 
@@ -28,4 +46,68 @@
 /* Glassmorphism utilities */
 .glass-panel {
   @apply bg-slate-900/60 backdrop-blur-md border border-slate-700/50 rounded-xl;
+}
+
+/* ============================================================
+   Fondo vivo: La Arena Nocturna (DESIGN.md)
+   Capa fija detrás del contenido con halos esmeralda, cian y
+   azul profundo que derivan lentamente sobre el negro de arena.
+   Excepción: el Onboarding no usa esta capa (imagen estática).
+   ============================================================ */
+.arena-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--color-arena);
+}
+
+.arena-glow {
+  position: absolute;
+  border-radius: 9999px;
+  opacity: 0.22;
+}
+
+.arena-glow--emerald {
+  width: 42vmax;
+  height: 42vmax;
+  top: -12vmax;
+  left: -10vmax;
+  background: radial-gradient(circle, #10b981 0%, transparent 70%);
+  animation: arena-drift 30s ease-in-out infinite alternate;
+}
+
+.arena-glow--cyan {
+  width: 36vmax;
+  height: 36vmax;
+  top: 40%;
+  right: -12vmax;
+  background: radial-gradient(circle, #22d3ee 0%, transparent 70%);
+  animation: arena-drift 30s ease-in-out infinite alternate-reverse;
+}
+
+.arena-glow--blue {
+  width: 46vmax;
+  height: 46vmax;
+  bottom: -16vmax;
+  left: 30%;
+  background: radial-gradient(circle, #1d4ed8 0%, transparent 70%);
+  animation: arena-drift 38s ease-in-out infinite alternate;
+}
+
+@keyframes arena-drift {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate(6vmax, -4vmax) rotate(12deg);
+  }
+}
+
+/* Accesibilidad: sin deriva si el usuario prefiere movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .arena-glow {
+    animation: none;
+  }
 }

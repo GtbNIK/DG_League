@@ -77,30 +77,30 @@ export default function TournamentView({ tournament }) {
 
       {activeGroup !== 'KO' && (
         <div className="md:grid md:grid-cols-2 md:gap-6">
-          <div className="glass-panel overflow-hidden md:h-[calc(75vh-240px)] md:overflow-auto">
-            <div className="px-4 py-3 bg-slate-800/50 border-b border-slate-700/50 flex justify-between items-center">
-              <h3 className="text-base font-bold uppercase tracking-wider text-white">Tabla de Posiciones</h3>
+          <div className="bg-surface border border-line rounded-2xl overflow-hidden md:h-[calc(75vh-240px)] md:overflow-auto">
+            <div className="px-4 py-3 border-b border-line flex justify-between items-center">
+              <h3 className="text-lg font-semibold font-display text-ink">Tabla de Posiciones</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-sm text-slate-400 uppercase bg-slate-900/50">
+                <thead className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Jugador</th>
-                    <th className="px-2 py-3 font-medium text-center">PJ</th>
-                    <th className="px-2 py-3 font-medium text-center">DG</th>
-                    <th className="px-4 py-3 font-black text-emerald-400 text-center">PTS</th>
+                    <th className="px-4 py-3">Jugador</th>
+                    <th className="px-2 py-3 text-center">PJ</th>
+                    <th className="px-2 py-3 text-center">DG</th>
+                    <th className="px-4 py-3 text-center">PTS</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentStandings.map((player, idx) => (
-                    <tr key={player.name} className={`border-b border-slate-800 last:border-0 ${idx < 2 ? 'bg-emerald-500/5' : ''}`}>
-                      <td className="px-4 py-4 font-medium flex items-center gap-2">
-                        <span className={`w-6 text-center text-sm font-black ${idx < 2 ? 'text-emerald-400' : 'text-slate-600'}`}>{idx + 1}</span>
+                    <tr key={player.name} className={`border-b border-line last:border-0 transition-colors hover:bg-surface-raised ${idx === 0 ? 'shadow-[inset_3px_0_0_#10B981]' : ''}`}>
+                      <td className="px-4 py-4 font-medium text-ink flex items-center gap-2">
+                        <span className={`w-6 text-center text-sm font-display font-bold ${idx < 2 ? 'text-emerald-400' : 'text-muted'}`}>{idx + 1}</span>
                         {player.name}
                       </td>
-                      <td className="px-2 py-4 text-center text-slate-400 text-base">{player.played}</td>
-                      <td className="px-2 py-4 text-center text-slate-400 text-base">{player.goalDifference > 0 ? `+${player.goalDifference}` : player.goalDifference}</td>
-                      <td className="px-4 py-4 text-center font-black text-white text-lg">{player.points}</td>
+                      <td className="px-2 py-4 text-center text-muted text-base font-display tabular-nums">{player.played}</td>
+                      <td className="px-2 py-4 text-center text-muted text-base font-display tabular-nums">{player.goalDifference > 0 ? `+${player.goalDifference}` : player.goalDifference}</td>
+                      <td className="px-4 py-4 text-center font-display font-bold text-emerald-400 text-lg tabular-nums">{player.points}</td>
                     </tr>
                   ))}
                 </tbody>

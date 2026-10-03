@@ -1,14 +1,18 @@
 import { useLocalStorage } from "./useLocalStorage";
 import { v4 as uuidv4 } from "uuid";
+import { TEAM_CATALOG } from "../utils/teamCatalog";
 
 const initialState = {
-  phase: "setup", // 'setup' | 'group' | 'knockout'
+  phase: "setup", // 'setup' | 'draft' | 'group' | 'knockout'
+  onboardingDone: false, // Si ya pasó por la pantalla de inicio (landing)
   players: [],
   matches: [],
   groups: { A: [], B: [] },
   transfers: [],
   nerfs: [],
   predictions: [], // Pronósticos sociales: { id, matchId, player, pick }
+  draftOrder: [], // Orden de turnos del draft: string[] de nombres
+  draftPicks: [], // Elecciones del draft: { player, teamId }
   knockout: {
     semi1: { score1: null, score2: null, closed: false },
     semi2: { score1: null, score2: null, closed: false },
@@ -26,6 +30,13 @@ export function useTournament() {
     const data = { ...initialState, ...storedData };
 
   // Funciones de Setup
+  /**
+   * Marca el onboarding (pantalla de inicio) como completado.
+   */
+  const finishOnboarding = () => {
+    setData((prev) => ({ ...prev, onboardingDone: true }));
+  };
+
   const addPlayer = (name) => {
     if (data.players.length >= 10 || data.players.includes(name)) return false;
     setData((prev) => ({ ...prev, players: [...prev.players, name] }));
@@ -82,6 +93,74 @@ export function useTournament() {
       matches,
       phase: "group",
     }));
+  };
+
+  // Draft de equipos
+  /**
+   * Detecta si un nombre corresponde a Neil (case-insensitive).
+   * Regla casera: Neil siempre elige de último en el draft.
+   */
+  const isNeil = (name) => name.trim().toLowerCase() === "neil";
+
+  /**
+   * Sortea el orden de turnos del draft: mezcla aleatoriamente a los
+   * jugadores y deja a Neil SIEMPRE en el último lugar (no entra en el
+   * sorteo aleatorio). Cambia la fase a 'draft'.
+   */
+  const startDraftOrder = () => {
+    const shuffled = data.players
+      .filter((p) => !isNeil(p))
+      .sort(() => 0.5 - Math.random());
+    const fixedLast = data.players.filter((p) => isNeil(p));
+
+    setData((prev) => ({
+      ...prev,
+      draftOrder: [...shuffled, ...fixedLast],
+      phase: "draft",
+    }));
+  };
+
+  /**
+   * Asigna el equipo libre indicado al jugador del turno actual.
+   * El turno se deriva de la cantidad de elecciones ya hechas.
+   *
+   * @param {string} teamId - Id del equipo del catálogo.
+   */
+  const pickTeam = (teamId) => {
+    setData((prev) => {
+      const alreadyTaken = prev.draftPicks.some((pick) => pick.teamId === teamId);
+      const currentPlayer = prev.draftOrder[prev.draftPicks.length];
+      // Si el equipo está tomado o ya no quedan turnos, no hacer nada.
+      if (alreadyTaken || !currentPlayer) return prev;
+      return {
+        ...prev,
+        draftPicks: [...prev.draftPicks, { player: currentPlayer, teamId }],
+      };
+    });
+  };
+
+  /**
+   * Asigna un equipo libre al azar para el jugador del turno actual.
+   */
+  const pickRandomTeam = () => {
+    const takenIds = data.draftPicks.map((pick) => pick.teamId);
+    const available = TEAM_CATALOG.filter((team) => !takenIds.includes(team.id));
+    if (available.length === 0) return;
+    const randomTeam = available[Math.floor(Math.random() * available.length)];
+    pickTeam(randomTeam.id);
+  };
+
+  /**
+   * Finaliza el draft y arranca la liga: genera grupos y partidos
+   * (si no existían) y cambia la fase a 'group'.
+   */
+  const startLeague = () => {
+    if (data.matches.length === 0) {
+      generateGroupsAndMatches();
+    } else {
+      // Torneo ya en curso (p. ej. se añadieron equipos a mitad): solo cambia la fase.
+      setData((prev) => ({ ...prev, phase: "group" }));
+    }
   };
 
   // Funciones de Torneo
@@ -279,6 +358,11 @@ export function useTournament() {
     data,
     addPlayer,
     removePlayer,
+    finishOnboarding,
+    startDraftOrder,
+    pickTeam,
+    pickRandomTeam,
+    startLeague,
     generateGroupsAndMatches,
     updateMatchScore,
     updateKnockoutScore,

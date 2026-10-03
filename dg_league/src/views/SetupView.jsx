@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { UserPlus, Play, Trash2 } from 'lucide-react'
 
 export default function SetupView({ tournament }) {
-  const { data, addPlayer, removePlayer, generateGroupsAndMatches } = tournament
+  const { data, addPlayer, removePlayer, startDraftOrder } = tournament
   const { players } = data
   const [newPlayer, setNewPlayer] = useState('')
   const [isShuffling, setIsShuffling] = useState(false)
@@ -18,7 +18,7 @@ export default function SetupView({ tournament }) {
     if (players.length >= 2) {
       setIsShuffling(true)
       setTimeout(() => {
-        generateGroupsAndMatches()
+        startDraftOrder()
       }, 3000)
     }
   }
@@ -100,12 +100,12 @@ export default function SetupView({ tournament }) {
             <div className="animate-spin">
               <Play fill="currentColor" size={20} />
             </div>
-            MEZCLANDO...
+            SORTEANDO ORDEN...
           </>
         ) : (
           <>
             <Play fill="currentColor" size={20} />
-            EMPEZAR LIGA
+            SORTEAR ORDEN
           </>
         )}
       </button>

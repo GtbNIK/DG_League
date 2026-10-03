@@ -1,2 +1,9 @@
 # Archivo de reglas de busqueda de ZCode (se regenera automaticamente)
 .zcodeignore
+
+# Impeccable: estado local y diarios de sesion live (no versionar)
+.impeccable/config.local.json
+.impeccable/live/
+
+# Copia de la skill impeccable para Windsurf (la canonica vive en .agents/skills)
+.windsurf/skills/impeccable/

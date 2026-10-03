@@ -1,0 +1,234 @@
+{
+    "schemaVersion": 2,
+    "generatedAt": "2026-10-03T16:30:00Z",
+    "title": "Design System: DG League",
+    "extensions": {
+        "colorMeta": {
+            "primary": {
+                "role": "primary",
+                "displayName": "Esmeralda Eléctrica",
+                "canonical": "#10B981",
+                "tonalRamp": ["#022C22", "#064E3B", "#065F46", "#047857", "#059669", "#10B981", "#34D399", "#6EE7B7"]
+            },
+            "secondary": {
+                "role": "secondary",
+                "displayName": "Cian Eléctrico",
+                "canonical": "#22D3EE",
+                "tonalRamp": ["#083344", "#155E75", "#0E7490", "#0891B2", "#06B6D4", "#22D3EE", "#67E8F9", "#A5F3FC"]
+            },
+            "deep-blue": {
+                "role": "tertiary",
+                "displayName": "Azul Profundo de Arena",
+                "canonical": "#1D4ED8",
+                "tonalRamp": ["#172554", "#1E3A8A", "#1E40AF", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD"]
+            },
+            "arena-black": {
+                "role": "neutral",
+                "displayName": "Negro de Arena",
+                "canonical": "#050A12",
+                "tonalRamp": ["#02040A", "#050A12", "#0A1424", "#101C30", "#16233B", "#1D2E4A", "#253A5C", "#2E4770"]
+            },
+            "surface": {
+                "role": "neutral",
+                "displayName": "Superficie",
+                "canonical": "#0B1626",
+                "tonalRamp": ["#050A12", "#0B1626", "#122036", "#1A2C47", "#233856", "#2D4568", "#38537C", "#446190"]
+            },
+            "surface-raised": {
+                "role": "neutral",
+                "displayName": "Superficie Elevada",
+                "canonical": "#122036",
+                "tonalRamp": ["#0B1626", "#122036", "#1A2C47", "#233856", "#2D4568", "#38537C", "#446190", "#5170A4"]
+            },
+            "border-subtle": {
+                "role": "neutral",
+                "displayName": "Borde Sutil",
+                "canonical": "#1B2A45",
+                "tonalRamp": ["#0F1A30", "#1B2A45", "#25385C", "#304670", "#3B5484", "#466298", "#5170AC", "#5C7EC0"]
+            },
+            "text-primary": {
+                "role": "neutral",
+                "displayName": "Texto Principal",
+                "canonical": "#F1F5F9",
+                "tonalRamp": ["#0F172A", "#1E293B", "#334155", "#475569", "#64748B", "#94A3B8", "#CBD5E1", "#F1F5F9"]
+            },
+            "text-muted": {
+                "role": "neutral",
+                "displayName": "Texto Atenuado",
+                "canonical": "#8FA6C4",
+                "tonalRamp": ["#2A3A55", "#3B4E6E", "#4C6287", "#5D76A0", "#6E8AB9", "#8FA6C4", "#AFC3DE", "#D0DFF2"]
+            },
+            "trophy-gold": {
+                "role": "tertiary",
+                "displayName": "Oro de Trofeo",
+                "canonical": "#F59E0B",
+                "tonalRamp": ["#451A03", "#78350F", "#92400E", "#B45309", "#D97706", "#F59E0B", "#FBBF24", "#FCD34D"]
+            },
+            "danger": {
+                "role": "neutral",
+                "displayName": "Peligro",
+                "canonical": "#FB7185",
+                "tonalRamp": ["#4C0519", "#881337", "#9F1239", "#BE123C", "#E11D48", "#FB7185", "#FDA4AF", "#FECDD3"]
+            }
+        },
+        "typographyMeta": {
+            "display": { "displayName": "Display", "purpose": "Titulares de vista y momentos épicos (Gran Final, campeón). Pocas veces por pantalla." },
+            "headline": { "displayName": "Headline", "purpose": "Números grandes: marcadores en vivo, puntos de líder, contadores del draft." },
+            "title": { "displayName": "Title", "purpose": "Títulos de tarjeta y sección." },
+            "body": { "displayName": "Body", "purpose": "Todo texto corrido y descripciones. Siempre Montserrat." },
+            "label": { "displayName": "Label", "purpose": "Encabezados de tabla, pestañas, metadatos. Único lugar del mayúsculo sostenido." }
+        },
+        "shadows": [
+            {
+                "name": "glow-activo",
+                "value": "0 0 20px rgba(16, 185, 129, 0.35)",
+                "purpose": "Resplandor de respuesta: foco, selección o celebración. Nunca decoración estática."
+            },
+            {
+                "name": "elevacion-flotante",
+                "value": "0 8px 30px rgba(2, 6, 23, 0.6)",
+                "purpose": "Elementos que flotan sobre el fondo: strip del draft, modales, menús."
+            }
+        ],
+        "motion": [
+            {
+                "name": "ease-arena",
+                "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+                "purpose": "Entradas y salidas de contenido, 200-400ms."
+            },
+            {
+                "name": "spring-juego",
+                "value": "motion/react spring: stiffness 260, damping 20",
+                "purpose": "Momentos de juego: pick del draft, celebración, flip de marcador."
+            },
+            {
+                "name": "drift-fondo",
+                "value": "30s ease-in-out infinite alternate",
+                "purpose": "Deriva lenta de los halos del fondo vivo."
+            },
+            {
+                "name": "stagger-lista",
+                "value": "40ms por ítem",
+                "purpose": "Entrada escalonada de listas, filas de tabla y cards."
+            }
+        ],
+        "breakpoints": [
+            { "name": "sm", "value": "640px" },
+            { "name": "md", "value": "768px" },
+            { "name": "lg", "value": "1024px" }
+        ]
+    },
+    "components": [
+        {
+            "name": "Botón Primario",
+            "kind": "button",
+            "refersTo": "button-primary",
+            "description": "Acción que hace avanzar el juego: esmeralda sólida, texto oscuro, responde al hover con resplandor activo.",
+            "html": "<button class=\"ds-btn-primary\">Empezar Liga</button>",
+            "css": ".ds-btn-primary { background: #10B981; color: #050A12; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s, filter 0.2s; } .ds-btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 20px rgba(16, 185, 129, 0.35); } .ds-btn-primary:focus-visible { outline: 2px solid #22D3EE; outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(0); filter: brightness(0.95); }"
+        },
+        {
+            "name": "Botón Fantasma",
+            "kind": "button",
+            "refersTo": "button-ghost",
+            "description": "Acción secundaria: transparente con borde sutil; el hover rellena con superficie elevada.",
+            "html": "<button class=\"ds-btn-ghost\">Ver reglas</button>",
+            "css": ".ds-btn-ghost { background: transparent; color: #F1F5F9; font-family: 'Montserrat', system-ui, sans-serif; font-size: 13px; font-weight: 600; padding: 12px 24px; border: 1px solid #1B2A45; border-radius: 10px; cursor: pointer; transition: background 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s; } .ds-btn-ghost:hover { background: #122036; border-color: #2A3F63; } .ds-btn-ghost:focus-visible { outline: 2px solid #22D3EE; outline-offset: 2px; }"
+        },
+        {
+            "name": "Card de Arena",
+            "kind": "card",
+            "refersTo": "card",
+            "description": "Contenedor base: superficie sólida, borde sutil de 1px, radio 16px. Sin blur, sin glow en reposo.",
+            "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Tabla de Posiciones</h3><p class=\"ds-card-body\">Contenido sólido sobre la arena nocturna. La tarjeta delinea, jamás brilla.</p></div>",
+            "css": ".ds-card { background: #0B1626; border: 1px solid #1B2A45; border-radius: 16px; padding: 20px; color: #F1F5F9; } .ds-card-title { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 18px; font-weight: 600; margin: 0 0 16px 0; } .ds-card-body { font-family: 'Montserrat', system-ui, sans-serif; font-size: 15px; font-weight: 400; line-height: 1.6; color: #8FA6C4; margin: 0; }"
+        },
+        {
+            "name": "Duelo de Marcador",
+            "kind": "custom",
+            "refersTo": "score-input",
+            "description": "Componente firma: par de inputs 48px lado a lado con separador VS; foco con resplandor activo.",
+            "html": "<div class=\"ds-duel\"><input class=\"ds-duel-input\" value=\"3\" readonly aria-label=\"Goles local\" /><span class=\"ds-duel-vs\">VS</span><input class=\"ds-duel-input\" value=\"1\" readonly aria-label=\"Goles visita\" /></div>",
+            "css": ".ds-duel { display: flex; align-items: center; gap: 12px; } .ds-duel-input { width: 48px; height: 48px; background: #050A12; border: 1px solid #1B2A45; border-radius: 6px; color: #10B981; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 24px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; transition: border-color 0.2s, box-shadow 0.2s; } .ds-duel-input:focus { outline: none; border-color: #10B981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.35); } .ds-duel-vs { font-family: 'Montserrat', system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #8FA6C4; }"
+        },
+        {
+            "name": "Tabla de Posiciones",
+            "kind": "card",
+            "refersTo": "card",
+            "description": "Tabla limpia: encabezado en label atenuado, cifras tabulares en Space Grotesk, líder con barra esmeralda. Sin strips translúcidos.",
+            "html": "<table class=\"ds-table\"><thead><tr><th>#</th><th class=\"ds-th-name\">Jugador</th><th>PJ</th><th>DG</th><th class=\"ds-th-pts\">PTS</th></tr></thead><tbody><tr class=\"ds-row-lead\"><td>1</td><td class=\"ds-td-name\">Neil</td><td>3</td><td>+7</td><td class=\"ds-td-pts\">9</td></tr><tr><td>2</td><td class=\"ds-td-name\">Cristian</td><td>3</td><td>+2</td><td class=\"ds-td-pts\">6</td></tr></tbody></table>",
+            "css": ".ds-table { width: 100%; border-collapse: collapse; } .ds-table th { font-family: 'Montserrat', system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8FA6C4; text-align: center; padding: 10px 12px; border-bottom: 1px solid #1B2A45; } .ds-table th.ds-th-name { text-align: left; } .ds-table th.ds-th-pts { color: #10B981; } .ds-table td { padding: 14px 12px; border-bottom: 1px solid #1B2A45; text-align: center; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: #8FA6C4; font-variant-numeric: tabular-nums; } .ds-table td.ds-td-name { text-align: left; font-family: 'Montserrat', system-ui, sans-serif; font-weight: 500; color: #F1F5F9; } .ds-table td.ds-td-pts { color: #10B981; font-weight: 700; font-size: 17px; } .ds-table tr { transition: background 0.2s; } .ds-table tbody tr:hover { background: #122036; } .ds-row-lead { box-shadow: inset 3px 0 0 #10B981; }"
+        },
+        {
+            "name": "Pestañas de Navegación",
+            "kind": "nav",
+            "refersTo": "nav-tab-active",
+            "description": "Barra inferior sólida; pestaña activa con pastilla de superficie elevada e icono esmeralda.",
+            "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-tab ds-nav-tab--active\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"20\" height=\"20\"><path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\"/><path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\"/><path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\"/><path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\"/></svg><span>Torneo</span></button><button class=\"ds-nav-tab\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"20\" height=\"20\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/></svg><span>Pronóstico</span></button></nav>",
+            "css": ".ds-nav { display: flex; gap: 4px; background: #0B1626; border-top: 1px solid #1B2A45; padding: 8px; } .ds-nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; background: transparent; border: none; border-radius: 10px; color: #8FA6C4; font-family: 'Montserrat', system-ui, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, color 0.2s; } .ds-nav-tab:hover { color: #F1F5F9; } .ds-nav-tab--active { background: #122036; color: #10B981; }"
+        },
+        {
+            "name": "Fondo Vivo (capa de arena)",
+            "kind": "custom",
+            "refersTo": "card",
+            "description": "La capa fija que vive detrás de todo: base negro azulado con halos esmeralda, cian y azul profundo derivando lentamente.",
+            "html": "<div class=\"ds-arena\"><span class=\"ds-glow ds-glow--emerald\"></span><span class=\"ds-glow ds-glow--cyan\"></span><span class=\"ds-glow ds-glow--blue\"></span></div>",
+            "css": ".ds-arena { position: relative; width: 100%; height: 100%; min-height: 220px; overflow: hidden; background: #050A12; } .ds-glow { position: absolute; border-radius: 9999px; filter: blur(80px); opacity: 0.22; } .ds-glow--emerald { width: 320px; height: 320px; top: -80px; left: -60px; background: radial-gradient(circle, #10B981 0%, transparent 70%); animation: ds-drift 30s ease-in-out infinite alternate; } .ds-glow--cyan { width: 280px; height: 280px; top: 40%; right: -80px; background: radial-gradient(circle, #22D3EE 0%, transparent 70%); animation: ds-drift 30s ease-in-out infinite alternate-reverse; } .ds-glow--blue { width: 360px; height: 360px; bottom: -120px; left: 30%; background: radial-gradient(circle, #1D4ED8 0%, transparent 70%); animation: ds-drift 38s ease-in-out infinite alternate; } @keyframes ds-drift { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(60px, -40px) rotate(12deg); } }"
+        }
+    ],
+    "narrative": {
+        "northStar": "La Arena Nocturna",
+        "overview": "DG League se ve como un estadio de esports de noche: un fondo negro azulado (#050A12) sobre el que derivan lentamente halos de energía esmeralda y cian, y encima flotan superficies sólidas y seguras de sí mismas. El movimiento es protagonista — las entradas, los marcadores y las celebraciones se mueven con intención de videojuego — pero el dato siempre es legible: tablas limpias, cifras tabulares, tipografía con jerarquía real. La emoción la ponen la animación y el color en el momento justo; la profesionalidad la pone la calma tipográfica del resto. Este sistema reemplaza al incumbente (glassmorphism translúcido, bordes con glow neón, tablas genéricas, tipografía del sistema), declarado anti-referencia por Neil. La única superficie fuera del sistema es el Onboarding: imagen estática autoría de Neil en Photoshop que se respeta tal cual.",
+        "keyCharacteristics": [
+            "Fondo vivo animado (esmeralda → cian → azul profundo sobre negro) en todas las vistas, excepto el Onboarding.",
+            "Cards y paneles con fondo sólido (#0B1626); cero translucidez y cero backdrop-blur fuera del Onboarding.",
+            "Animación protagonista con motion/react: entradas escalonadas, celebraciones de estado, transiciones entre vistas.",
+            "Pareja tipográfica Space Grotesk (títulos y cifras) + Montserrat (texto y párrafos), siempre cargada vía Google Fonts.",
+            "Tablas limpias: encabezados discretos, números tabulares, jerarquía por peso y color, sin adornos.",
+            "El resplandor es una respuesta, no una decoración: solo aparece al enfocar, seleccionar o celebrar."
+        ],
+        "rules": [
+            {
+                "name": "La Regla del Fondo Vivo",
+                "body": "Toda vista vive sobre el fondo animado verde-azul-negro (capa fija detrás del contenido); ninguna tarjeta hereda translucidez de ese fondo — superficie sólida siempre. La única excepción es el Onboarding, cuya imagen estática de Photoshop manda y jamás se anima.",
+                "section": "colors"
+            },
+            {
+                "name": "El Oro Solo Celebra",
+                "body": "El oro (#F59E0B) aparece únicamente en contexto de campeón o Gran Final. Usarlo como decoración genérica diluye la única distinción que importa.",
+                "section": "colors"
+            },
+            {
+                "name": "La Regla de las Dos Voces",
+                "body": "Space Grotesk solo habla en títulos y cifras; Montserrat carga todo el texto corrido. Jamás se intercambian los roles.",
+                "section": "typography"
+            },
+            {
+                "name": "La Regla del Grito Ganado",
+                "body": "La jerarquía se gana con tamaño, peso y movimiento — no con MAYÚSCULAS + tracking-widest sostenidos en títulos y secciones.",
+                "section": "typography"
+            },
+            {
+                "name": "El Resplandor Responde",
+                "body": "El glow es un feedback, no un adorno: aparece al enfocar, seleccionar o celebrar (gol, victoria, logro) y se va cuando el momento pasa. Un halo estático en reposo es exactamente el slop que este sistema prohíbe.",
+                "section": "elevation"
+            }
+        ],
+        "dos": [
+            "Do animar con propósito: entradas escalonadas de listas y tablas (stagger ~40ms por ítem, 200-400ms, ease-arena), transiciones entre vistas y celebraciones de estado con motion/react.",
+            "Do mantener toda tarjeta sólida: background #0B1626, borde 1px #1B2A45, radio 16px, padding 20px.",
+            "Do usar Space Grotesk con tabular-nums en toda cifra (marcadores, tablas, estadísticas).",
+            "Do reservar el oro (#F59E0B) para campeón y Gran Final, y el resplandor para momentos de respuesta.",
+            "Do respetar el Onboarding como isla: imagen estática de Photoshop, panel propio de Neil, sin fondo vivo ni tokens de este sistema.",
+            "Do cargar Space Grotesk y Montserrat desde Google Fonts antes de la primera pantalla."
+        ],
+        "donts": [
+            "Don't usar glassmorphism (backdrop-blur en paneles o cards) fuera del Onboarding — prohibición explícita de Neil.",
+            "Don't dibujar bordes neón ni halos estáticos: el glow que no responde a nada es la definición de slop en este proyecto.",
+            "Don't maquetar títulos o secciones en MAYÚSCULAS con tracking amplio; el mayúsculo vive solo en labels de 11px.",
+            "Don't usar superficies translúcidas en tablas ni encabezados sobre strips semitransparentes.",
+            "Don't dejar la pila tipográfica del sistema en producción: sin Google Fonts cargadas, el mundo tipográfico no existe.",
+            "Don't animar el fondo del Onboarding ni aplicar el fondo vivo sobre él."
+        ]
+    }
+}

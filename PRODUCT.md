@@ -40,7 +40,7 @@ App hecha a la medida del ritual propio del grupo: reglas caseras codificadas co
 - **Estado:** un único objeto global gestionado por `useTournament()`; las vistas nunca mutan estado directamente. Al añadir campos, actualizar `initialState` para que estados viejos en `localStorage` hereden los nuevos.
 - **Persistencia:** solo `localStorage`; sin backend ni base de datos. La persistencia en la nube (Prisma + Supabase en Railway) es idea futura, fuera de alcance actual.
 - **En construcción (confirmado por Neil, 2026-10-03):** la Fase 1 (LandingView + DraftView, sin commitear) está en construcción; faltan partes por completar o pulir antes de considerarla cerrada y validada con el grupo.
-- **Decidido pero sin implementar (Fase 2):** quiniela de marcador exacto escalonado (3 pts exacto / 1 pt ganador o empate / 0 fallar, migrando predicciones de `pick` a `{ score1, score2 }`) y premios de temporada solo con ganadores (más goles anotados, menos goles recibidos, mayor goleada, + campeón y mejor pronosticador propuestos).
+- **Decidido pero sin implementar (Fase 2, actualizado 2026-10-06):** quiniela igual a la actual (elegir ganador) **más opción de empate**; 1 punto por acierto, sin marcador exacto (se descartó el escalonado 3/1/0 y la migración de `pick` a `{ score1, score2 }`), y premios de temporada solo con ganadores (más goles anotados, menos goles recibidos, mayor goleada, + campeón y mejor pronosticador propuestos).
 - **Fuera de alcance:** pronósticos de eliminatorias, mostrar equipos en las tablas del torneo (pulir tras Fase 1), backend/persistencia en la nube.
 
 ## Brand Commitments

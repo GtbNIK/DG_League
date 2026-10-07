@@ -244,11 +244,12 @@ export function useTournament() {
     return standings;
   };
 
-  // Fichajes y reglas
-  const addTransfer = (user, playerOut, playerIn) => {
+  // Fichajes: intercambio 1x1 donde user entrega playerOut y toma playerIn
+  // de la plantilla de targetPlayer (quien cede el jugador).
+  const addTransfer = (user, playerOut, playerIn, targetPlayer) => {
     setData((prev) => ({
       ...prev,
-      transfers: [...prev.transfers, { id: uuidv4(), user, playerOut, playerIn }]
+      transfers: [...prev.transfers, { id: uuidv4(), user, playerOut, playerIn, targetPlayer }]
     }));
   };
 

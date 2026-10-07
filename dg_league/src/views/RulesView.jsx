@@ -1,132 +1,152 @@
 import { useState } from 'react'
-import { ArrowRightLeft, ShieldBan } from 'lucide-react'
+import { motion as Motion } from 'motion/react'
+import { ArrowRightLeft } from 'lucide-react'
+import TeamTag from '../components/TeamTag'
 
+/**
+ * Vista de fichajes 1x1: un jugador entrega un futbolista de su plantilla
+ * y toma otro de la plantilla de un rival. En escritorio el formulario
+ * queda a la izquierda (centrado verticalmente) y el historial a la derecha.
+ *
+ * @param {Object} props
+ * @param {Object} props.tournament - Estado y acciones del hook useTournament.
+ */
 export default function RulesView({ tournament }) {
-  const { data, addTransfer, toggleNerf } = tournament
-  const { transfers, nerfs, players } = data
+  const { data, addTransfer } = tournament
+  const { transfers, players, draftPicks } = data
 
   const [playerOut, setPlayerOut] = useState('')
   const [playerIn, setPlayerIn] = useState('')
   const [selectedUser, setSelectedUser] = useState(players[0] || '')
+  const [targetPlayer, setTargetPlayer] = useState(players[1] || '')
+
+  /**
+   * Lista de posibles cedentes: cualquiera excepto quien hace el fichaje.
+   */
+  const possibleTargets = players.filter((p) => p !== selectedUser)
+
+  /**
+   * Al cambiar quien ficha, el cedente seleccionado puede quedar inválido:
+   * se reajusta al primero válido.
+   */
+  const handleUserChange = (user) => {
+    setSelectedUser(user)
+    if (targetPlayer === user) {
+      setTargetPlayer(players.find((p) => p !== user) || '')
+    }
+  }
 
   const handleTransferSubmit = (e) => {
     e.preventDefault()
-    if (!playerOut.trim() || !playerIn.trim() || !selectedUser) return
-    addTransfer(selectedUser, playerOut.trim(), playerIn.trim())
+    if (!playerOut.trim() || !playerIn.trim() || !selectedUser || !targetPlayer) return
+    addTransfer(selectedUser, playerOut.trim(), playerIn.trim(), targetPlayer)
     setPlayerOut('')
     setPlayerIn('')
   }
 
-  // Nerfeos definidos
-  const neilNerfs = [
-    "No puede robar jugadores",
-    "Elige de último"
-  ]
-
-  const neilActiveNerfs = nerfs.filter(n => n.userId === 'Neil' && n.active)
-
   return (
-    <div className="flex flex-col gap-6 mb-24 animate-in fade-in duration-300">
-      
-      {/* 1x1 Transfers */}
-      <div className="glass-panel p-5">
+    <Motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="flex flex-col gap-6 mb-24 md:grid md:grid-cols-2 md:gap-8 md:items-center md:min-h-[60vh]"
+    >
+
+      {/* Formulario de fichajes (izquierda en escritorio) */}
+      <div className="bg-surface border border-line rounded-2xl p-5 md:self-center">
         <div className="flex items-center gap-2 mb-4">
           <ArrowRightLeft className="text-emerald-400" size={20} />
-          <h2 className="text-lg font-black uppercase text-white">Fichajes 1x1</h2>
+          <h2 className="text-lg font-semibold font-display text-ink">Fichajes 1x1</h2>
         </div>
-        <p className="text-xs text-slate-400 mb-4">
+        <p className="text-xs text-muted mb-4">
           Registra el intercambio de jugadores (de la misma posición o media general).
         </p>
 
         <form onSubmit={handleTransferSubmit} className="space-y-3">
-          <select 
-            value={selectedUser} 
-            onChange={(e) => setSelectedUser(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500"
+          <select
+            value={selectedUser}
+            onChange={(e) => handleUserChange(e.target.value)}
+            className="w-full bg-arena border border-line rounded-lg px-4 py-3 text-ink focus:outline-none focus:border-emerald-400"
           >
             {players.map(p => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
-          
+
           <div className="flex gap-2 items-center">
             <input
               type="text"
               placeholder="Quita de su plantilla"
               value={playerOut}
               onChange={(e) => setPlayerOut(e.target.value)}
-              className="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500 text-sm"
+              className="flex-1 min-w-0 bg-arena border border-line rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-emerald-400 text-sm"
             />
-            <ArrowRightLeft className="text-slate-500 shrink-0" size={16} />
+            <ArrowRightLeft className="text-muted shrink-0" size={16} />
             <input
               type="text"
               placeholder="Añade a su plantilla"
               value={playerIn}
               onChange={(e) => setPlayerIn(e.target.value)}
-              className="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500 text-sm"
+              className="flex-1 min-w-0 bg-arena border border-line rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-emerald-400 text-sm"
             />
           </div>
 
+          {/* De quién toma el jugador que entra */}
+          <select
+            value={targetPlayer}
+            onChange={(e) => setTargetPlayer(e.target.value)}
+            className="w-full bg-arena border border-line rounded-lg px-4 py-3 text-ink focus:outline-none focus:border-emerald-400"
+          >
+            {possibleTargets.map(p => (
+              <option key={p} value={p}>Le quita a: {p}</option>
+            ))}
+          </select>
+
           <button
             type="submit"
-            disabled={!playerOut.trim() || !playerIn.trim()}
-            className="w-full bg-slate-800 text-white border border-slate-700 hover:border-emerald-500 py-3 rounded-lg font-bold disabled:opacity-50 transition-colors mt-2 text-sm uppercase tracking-wide"
+            disabled={!playerOut.trim() || !playerIn.trim() || !targetPlayer}
+            className="w-full bg-surface-raised text-ink border border-line hover:border-emerald-500/50 py-3 rounded-lg font-semibold disabled:opacity-50 transition-colors mt-2 text-sm"
           >
             Registrar Fichaje
           </button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-slate-700/50">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Historial Reciente</h3>
-          <ul className="space-y-2">
-            {transfers.length === 0 && <p className="text-xs text-slate-500 italic">No hay fichajes registrados.</p>}
-            {[...transfers].reverse().slice(0, 5).map(t => (
-              <li key={t.id} className="text-sm bg-slate-900/50 p-2 rounded-md border border-slate-800 flex flex-col gap-1">
-                <span className="text-emerald-400 font-bold text-xs">{t.user}</span>
-                <span className="text-slate-300">
-                  <span className="text-red-400 line-through mr-1">{t.playerOut}</span>
-                  <ArrowRightLeft className="inline mx-1 text-slate-600" size={12} />
-                  <span className="text-emerald-300 ml-1 font-medium">{t.playerIn}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
 
-      {/* Special Rules / Nerfs */}
-      <div className="glass-panel p-5 border-blue-500/30">
-        <div className="flex items-center gap-2 mb-4">
-          <ShieldBan className="text-blue-400" size={20} />
-          <h2 className="text-lg font-black uppercase text-white">Nerfeos (Neil)</h2>
-        </div>
-        <p className="text-xs text-slate-400 mb-4">
-          Reglas especiales aplicadas a Neil para equilibrar el torneo.
-        </p>
-
-        <div className="space-y-2">
-          {neilNerfs.map(desc => {
-            const isActive = neilActiveNerfs.some(n => n.description === desc)
-            return (
-              <button
-                key={desc}
-                onClick={() => toggleNerf('Neil', desc)}
-                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${
-                  isActive 
-                    ? 'bg-blue-500/10 border-blue-500/50 text-blue-100' 
-                    : 'bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-600'
-                }`}
-              >
-                <span className="text-sm font-medium">{desc}</span>
-                <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isActive ? 'border-blue-400 bg-blue-400/20' : 'border-slate-600'}`}>
-                  {isActive && <div className="w-2 h-2 rounded-full bg-blue-400" />}
-                </div>
-              </button>
-            )
-          })}
-        </div>
+      {/* Historial de fichajes (derecha en escritorio) */}
+      <div className="bg-surface border border-line rounded-2xl p-5 md:self-center">
+        <h3 className="text-[11px] uppercase tracking-[0.06em] font-semibold text-muted mb-3">Historial Reciente</h3>
+        <ul className="space-y-2">
+          {transfers.length === 0 && <p className="text-xs text-muted italic">No hay fichajes registrados.</p>}
+          {[...transfers].reverse().slice(0, 5).map((t, idx) => (
+            <Motion.li
+              key={t.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04, duration: 0.25 }}
+              className="text-sm bg-arena p-3 rounded-md border border-line flex flex-col gap-1.5"
+            >
+              {/* Relato plano del fichaje: quién, a quién le quita qué, y qué recibe */}
+              <p className="text-ink leading-relaxed">
+                <span className="text-emerald-400 font-semibold">{t.user}</span>
+                {t.targetPlayer ? (
+                    <>
+                      {' '}le quita <span className="text-rose-400 font-semibold">{t.playerOut}</span> a{' '}
+                      <span className="text-cyan-300 font-semibold">{t.targetPlayer}</span> y le da a{' '}
+                      <span className="text-emerald-300 font-semibold">{t.playerIn}</span>
+                    </>
+                ) : (
+                    <>
+                      {' '}cambia <span className="text-rose-400 font-semibold">"{t.playerOut}"</span> por{' '}
+                      <span className="text-emerald-300 font-semibold">"{t.playerIn}"</span>
+                    </>
+                )}
+              </p>
+              <TeamTag player={t.user} draftPicks={draftPicks} />
+            </Motion.li>
+          ))}
+        </ul>
       </div>
 
-    </div>
+    </Motion.div>
   )
 }

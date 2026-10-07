@@ -162,8 +162,8 @@ export default function DraftView({ tournament }) {
                                         exit={{ opacity: 0, scale: 0.7, transition: { duration: 0.2 } }}
                                         whileHover={{ y: -4 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="glass-panel p-4 md:p-5 flex flex-col items-center gap-3 cursor-pointer
-                                                   hover:border-emerald-500/50 transition-colors"
+                                        className="bg-surface border border-emerald-500/25 rounded-2xl p-4 md:p-5 flex flex-col items-center gap-3 cursor-pointer
+                                                   transition-all duration-200 hover:border-emerald-500/60 hover:shadow-[0_8px_30px_rgba(2,6,23,0.6)]"
                                     >
                                         <TeamLogo team={team} size="lg" />
                                         <span className="text-sm font-bold text-white text-center leading-tight">
@@ -185,8 +185,8 @@ export default function DraftView({ tournament }) {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: 'spring', bounce: 0.4 }}
                     whileTap={{ scale: 0.95 }}
-                    className="bg-emerald-500 text-slate-950 px-10 py-4 rounded-xl font-black text-lg tracking-wide
-                               flex items-center gap-2 shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-colors hover:bg-emerald-400"
+                    className="bg-emerald-500 text-arena px-10 py-4 rounded-xl font-bold text-lg
+                               flex items-center gap-2 transition-all duration-200 hover:brightness-110 hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]"
                 >
                     <Play fill="currentColor" size={20} />
                     Empezar Liga
@@ -217,7 +217,7 @@ export default function DraftView({ tournament }) {
                                         layout
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="glass-panel p-4 flex flex-col items-center gap-2 min-w-36"
+                                        className="bg-surface border border-emerald-500/25 rounded-2xl p-4 flex flex-col items-center gap-2 min-w-36"
                                     >
                                         <span className="text-lg font-black text-white leading-tight text-center">
                                             {pick.player}

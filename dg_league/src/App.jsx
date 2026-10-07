@@ -60,16 +60,16 @@ function App() {
       </div>
 
       {/* Header estético */}
-      <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-emerald-500/20 px-4 py-3 mb-4">
+      <header className="sticky top-0 z-50 bg-surface border-b border-line px-4 py-3 mb-4">
         <div className="flex items-center justify-between">
-          <h1 className="flex items-center gap-3 text-xl font-bold tracking-wider text-emerald-400">
+          <h1 className="flex items-center gap-3 font-display text-xl font-bold text-ink">
             <img src="/LOGO-1.png" alt="DG League Logo" className="w-20 h-20 object-contain drop-shadow-md" />
-            <span>DG <span className="text-white">LEAGUE</span></span>
+            <span><span className="text-emerald-400">DG</span> <span className="text-ink">LEAGUE</span></span>
           </h1>
           {phase === 'group' && (
             <button
               onClick={resetData}
-              className="px-3 py-1 text-xs font-bold text-rose-400 border border-rose-500/30 rounded-lg hover:bg-rose-500/10 transition-colors"
+              className="px-3 py-1 text-xs font-semibold text-rose-400 border border-rose-500/30 rounded-[10px] hover:bg-rose-500/10 transition-colors"
             >
               Reiniciar
             </button>

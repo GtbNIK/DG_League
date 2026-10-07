@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { motion as Motion } from 'motion/react'
 import { ChevronDown, ChevronUp, Lock, Trash2, Target } from 'lucide-react'
+import TeamTag from '../components/TeamTag'
 
 /**
  * Devuelve el primer nombre de un jugador para etiquetas cortas.
@@ -14,7 +16,7 @@ const shortName = (name) => name.split(' ')[0]
 export default function PredictionsView({ tournament }) {
     const { data, addPrediction, removePrediction, getPredictionStandings } =
         tournament
-    const { players, matches, predictions } = data
+    const { players, matches, predictions, draftPicks } = data
 
     // Sección activa: 'A' | 'B' | 'tabla'
     const [section, setSection] = useState('A')
@@ -45,19 +47,19 @@ export default function PredictionsView({ tournament }) {
     return (
         <div className="flex flex-col gap-6 mb-24 animate-in fade-in duration-300">
             {/* Selector de sección */}
-            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
+            <div className="flex bg-surface rounded-[10px] p-1 border border-line">
                 {[
-                    ['A', 'GRUPO A'],
-                    ['B', 'GRUPO B'],
-                    ['tabla', 'TABLA'],
+                    ['A', 'Grupo A'],
+                    ['B', 'Grupo B'],
+                    ['tabla', 'Tabla'],
                 ].map(([key, label]) => (
                     <button
                         key={key}
                         onClick={() => setSection(key)}
-                        className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${
+                        className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors font-sans ${
                             section === key
-                                ? 'bg-emerald-500 text-slate-950'
-                                : 'text-slate-400 hover:text-white'
+                                ? 'bg-emerald-500 text-arena'
+                                : 'text-muted hover:text-ink'
                         }`}
                     >
                         {label}
@@ -66,15 +68,20 @@ export default function PredictionsView({ tournament }) {
             </div>
 
             {section !== 'tabla' &&
-                sectionMatches.map((match) => {
+                sectionMatches.map((match, idx) => {
                     const isExpanded = expandedId === match.id
                     const picks = countPicks(match.id)
 
                     return (
-                        <div
+                        <Motion.div
                             key={match.id}
-                            className={`glass-panel overflow-hidden ${
-                                match.closed ? 'bg-emerald-500/10 border-emerald-500/30' : ''
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                            className={`bg-surface border rounded-2xl overflow-hidden transition-all duration-200 ${
+                                match.closed
+                                    ? 'bg-emerald-500/10 border-emerald-500/50'
+                                    : 'border-emerald-500/25 hover:border-emerald-500/50 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(2,6,23,0.6)]'
                             }`}
                         >
                             {/* Cabecera del partido */}
@@ -83,10 +90,11 @@ export default function PredictionsView({ tournament }) {
                                 disabled={match.closed}
                                 className="w-full flex items-center justify-between p-3 text-left"
                             >
-                                <span className="flex-1 text-right font-bold text-sm pr-2 truncate max-w-[38%]">
-                                    {match.player1}
+                                <span className="flex-1 flex flex-col items-end text-right font-semibold text-sm text-ink pr-2 min-w-0 max-w-[38%]">
+                                    <span className="truncate max-w-full">{match.player1}</span>
+                                    <TeamTag player={match.player1} draftPicks={draftPicks} />
                                 </span>
-                                <span className="shrink-0 flex items-center gap-1.5 text-xs font-black text-slate-400">
+                                <span className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-muted font-display tabular-nums">
                                     {match.score1 !== null && match.score2 !== null && (
                                         <span className="text-emerald-300">
                                             {match.score1}-{match.score2}
@@ -101,20 +109,21 @@ export default function PredictionsView({ tournament }) {
                                         </>
                                     )}
                                 </span>
-                                <span className="flex-1 font-bold text-sm pl-2 truncate max-w-[38%]">
-                                    {match.player2}
+                                <span className="flex-1 flex flex-col items-start text-left font-semibold text-sm text-ink pl-2 min-w-0 max-w-[38%]">
+                                    <span className="truncate max-w-full">{match.player2}</span>
+                                    <TeamTag player={match.player2} draftPicks={draftPicks} />
                                 </span>
                                 {!match.closed &&
                                     (isExpanded ? (
-                                        <ChevronUp size={16} className="text-slate-500 ml-1" />
+                                        <ChevronUp size={16} className="text-muted ml-1" />
                                     ) : (
-                                        <ChevronDown size={16} className="text-slate-500 ml-1" />
+                                        <ChevronDown size={16} className="text-muted ml-1" />
                                     ))}
                             </button>
 
                             {/* Registro de pronósticos por amigo */}
                             {isExpanded && !match.closed && (
-                                <div className="px-3 pb-3 pt-1 border-t border-slate-700/50 space-y-1.5">
+                                <div className="px-3 pb-3 pt-1 border-t border-line space-y-1.5">
                                     {players.map((player) => {
                                         const pick = getPick(match.id, player)
                                         return (
@@ -122,8 +131,11 @@ export default function PredictionsView({ tournament }) {
                                                 key={player}
                                                 className="flex items-center justify-between gap-2 py-1"
                                             >
-                                                <span className="text-xs font-medium text-slate-300 truncate w-20 shrink-0">
-                                                    {shortName(player)}
+                                                <span className="flex flex-col min-w-0 w-20 shrink-0">
+                                                    <span className="text-xs font-medium text-ink truncate">
+                                                        {shortName(player)}
+                                                    </span>
+                                                    <TeamTag player={player} draftPicks={draftPicks} />
                                                 </span>
                                                 <div className="flex gap-1.5 flex-1 justify-end">
                                                     {[match.player1, match.player2].map((option) => {
@@ -136,10 +148,10 @@ export default function PredictionsView({ tournament }) {
                                                                         ? removePrediction(match.id, player)
                                                                         : addPrediction(match.id, player, option)
                                                                 }
-                                                                className={`flex-1 max-w-28 px-2 py-1.5 rounded-md border text-xs font-bold transition-colors ${
+                                                                className={`flex-1 max-w-28 px-2 py-1.5 rounded-md border text-xs font-semibold transition-colors ${
                                                                     isActive
-                                                                        ? 'bg-emerald-500 text-slate-950 border-emerald-400'
-                                                                        : 'bg-slate-900/70 border-slate-700 text-slate-400 hover:border-slate-500'
+                                                                        ? 'bg-emerald-500 text-arena border-emerald-400'
+                                                                        : 'bg-arena border-line text-muted hover:border-emerald-500/40'
                                                                 }`}
                                                             >
                                                                 {shortName(option)}
@@ -152,7 +164,7 @@ export default function PredictionsView({ tournament }) {
                                     })}
                                 </div>
                             )}
-                        </div>
+                        </Motion.div>
                     )
                 })}
 
@@ -198,7 +210,12 @@ export default function PredictionsView({ tournament }) {
                                                 {idx + 1}
                                             </span>
                                         </td>
-                                        <td className="px-2 py-3 font-medium text-ink">{row.name}</td>
+                                        <td className="px-2 py-3 font-medium text-ink">
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="truncate">{row.name}</span>
+                                                <TeamTag player={row.name} draftPicks={draftPicks} />
+                                            </div>
+                                        </td>
                                         <td className="px-2 py-3 text-center text-muted font-display tabular-nums">
                                             {row.hits}/{row.total}
                                         </td>

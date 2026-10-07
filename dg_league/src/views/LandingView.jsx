@@ -1,29 +1,27 @@
 import { useState } from 'react'
-import { motion as Motion } from 'motion/react'
-import { Play } from 'lucide-react'
+import { motion as Motion, AnimatePresence } from 'motion/react'
+import { BookOpen, Play } from 'lucide-react'
+import RulesCarousel from '../components/RulesCarousel'
 
 /**
  * Pantalla de inicio (onboarding). Se muestra solo la primera vez, cuando
- * no existe un torneo activo. Presenta la liga sobre una imagen de fondo y
- * da acceso al registro con el botón "Iniciar Liga".
- *
- * Diseño: la imagen cubre toda la pantalla y el panel de contenido se
- * superpone a la derecha (escritorio) o abajo (móvil) con un desenfoque
- * progresivo en la zona de unión, para que la foto se "derrita" hacia el
- * contenido sin bordes duros.
+ * no existe un torneo activo. La imagen diseñada por Neil ocupa toda la
+ * pantalla como protagonista y las acciones viven en una isla flotante
+ * inferior que roba el mínimo espacio a la foto.
  *
  * @param {Object} props
  * @param {Function} props.onFinish - Callback al pulsar "Iniciar Liga".
  */
 export default function LandingView({ onFinish }) {
     const [bgFailed, setBgFailed] = useState(false)
+    const [showRules, setShowRules] = useState(false)
 
     return (
         <div className="relative min-h-screen overflow-hidden bg-slate-950">
-            {/* Resaldo visual si la imagen de fondo aún no existe */}
+            {/* Respaldo visual si la imagen de fondo aún no existe */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,#064e3b_0%,#0f172a_55%,#020617_100%)]" />
 
-            {/* Imagen de fondo (horizontal, foco a la izquierda) */}
+            {/* Imagen de fondo a pantalla completa: la foto manda */}
             {!bgFailed && (
                 <Motion.img
                     src="/onboarding-bg.webp"
@@ -36,91 +34,58 @@ export default function LandingView({ onFinish }) {
                 />
             )}
 
-            {/* Velo de contraste: protege el texto sin apagar la foto */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-slate-950/30 md:bg-gradient-to-r md:from-slate-950/5 md:via-slate-950/10 md:to-slate-950/70" />
+            {/* Scrim inferior: asienta la isla flotante sin apagar la foto */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/20 pointer-events-none" />
 
-            {/* Panel de contenido: abajo en móvil, derecha en escritorio */}
-            <div className="relative z-10 min-h-screen flex items-end justify-center md:items-center md:justify-end">
-                <Motion.section
-                    initial={{ y: 48, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.7, delay: 0.25, ease: 'easeOut' }}
-                    className="relative w-full md:w-[46%] md:min-h-screen flex flex-col items-center justify-center text-center px-6 pt-28 pb-14 md:py-14
-                    bg-slate-950/55 backdrop-blur-xl md:border-l border-slate-700/40"
-                >
-                    {/* Costura difuminada: fundido progresivo de la unión con la foto */}
-                    <div className="hidden md:block absolute inset-y-0 -left-24 w-24 backdrop-blur-md [mask-image:linear-gradient(to_right,transparent,black)] pointer-events-none" />
-                    <div className="md:hidden absolute inset-x-0 -top-24 h-24 backdrop-blur-md [mask-image:linear-gradient(to_bottom,transparent,black)] pointer-events-none" />
-
-                    {/* Escudo */}
-                    <Motion.img
-                        src="/LOGO-1.png"
-                        alt="DG League"
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.45 }}
-                        className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-[0_0_25px_rgba(16,185,129,0.35)]"
-                    />
-
-                    {/* Titular con estilo dorsal: DG sólido + LEAGUE en trazo hueco */}
-                    <Motion.p
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.55 }}
-                        className="mt-8 text-[10px] md:text-xs font-bold tracking-[0.4em] text-emerald-400 uppercase"
-                    >
-                        12 Clubes · Un solo campeón · Un torneo Diferente al resto
-                    </Motion.p>
-
-                    <Motion.h1
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.65 }}
-                        className="mt-2 text-5xl md:text-7xl font-black leading-none tracking-tight"
-                    >
-                        <span className="text-white">DG</span>{' '}
-                        <span className="text-transparent [-webkit-text-stroke:2px_#10b981]">LEAGUE</span>
-                    </Motion.h1>
-
-                    <Motion.p
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.75 }}
-                        className="mt-5 max-w-sm text-sm md:text-base text-slate-300 leading-relaxed"
-                    >
-                        Elige tu club en el draft, sobrevive a la fase de grupos
-                        y conviertete en el campeón de la DG League.
-                    </Motion.p>
-
-                    {/* Botón principal con latido sutil */}
+            {/* Isla flotante de acciones: compacta, centrada abajo */}
+            <Motion.div
+                initial={{ y: 48, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.7, delay: 0.4, ease: 'easeOut' }}
+                className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-3 px-4 pb-6"
+            >
+                <div className="flex items-center gap-2 p-2 rounded-full bg-slate-900/70 backdrop-blur-md border border-slate-700/50 shadow-[0_8px_30px_rgba(2,6,23,0.6)]">
+                    {/* Acción primaria: avanzar al registro */}
                     <Motion.button
                         onClick={onFinish}
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0, scale: [1, 1.03, 1] }}
-                        transition={{
-                            opacity: { duration: 0.6, delay: 0.85 },
-                            y: { duration: 0.6, delay: 0.85 },
-                            scale: { duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 1.6 },
-                        }}
+                        animate={{ scale: [1, 1.03, 1] }}
+                        transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 1.6 }}
                         whileTap={{ scale: 0.95 }}
-                        className="mt-10 bg-emerald-500 text-slate-950 px-10 py-4 rounded-xl font-black text-lg tracking-wide
-                        flex items-center gap-2 shadow-[0_0_30px_rgba(16,185,129,0.4)]
-                        transition-colors hover:bg-emerald-400"
+                        className="flex items-center gap-2 bg-emerald-500 text-slate-950 px-7 py-3.5 rounded-full
+                        font-black text-base tracking-wide transition-colors hover:bg-emerald-400
+                        focus-visible:outline-2 focus-visible:outline-emerald-400"
                     >
-                        <Play fill="currentColor" size={20} />
+                        <Play fill="currentColor" size={18} />
                         Iniciar Liga
                     </Motion.button>
 
-                    <Motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 1 }}
-                        className="mt-4 text-xs text-slate-400"
+                    {/* Acción secundaria: consultar el reglamento */}
+                    <button
+                        onClick={() => setShowRules(true)}
+                        className="flex items-center gap-2 bg-black text-white px-6 py-3.5 rounded-full
+                        border border-emerald-500/70 font-bold text-base transition-colors
+                        hover:border-emerald-400 hover:bg-emerald-500/10
+                        focus-visible:outline-2 focus-visible:outline-emerald-400"
                     >
-                        Al iniciar, sortearás el orden del draft de equipos
-                    </Motion.p>
-                </Motion.section>
-            </div>
+                        <BookOpen size={18} className="text-emerald-400" />
+                        Ver reglas
+                    </button>
+                </div>
+
+                <Motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.9 }}
+                    className="text-xs text-slate-400 text-center"
+                >
+                    Al iniciar, sortearás el orden del draft de equipos
+                </Motion.p>
+            </Motion.div>
+
+            {/* Visor de reglas a pantalla completa */}
+            <AnimatePresence>
+                {showRules && <RulesCarousel onBack={() => setShowRules(false)} />}
+            </AnimatePresence>
         </div>
     )
 }

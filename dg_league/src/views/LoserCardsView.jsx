@@ -6,14 +6,14 @@ const PUNISHMENT_CARDS = [
   {
     id: 1,
     title: 'Catenaccio',
-    description: 'Tu rival en el próximo partido está obligado a jugar con Línea de 5 defensas..',
+    description: 'En el próximo partido estas obligado a jugar con Línea de 5 defensas, sacrifica un delantero',
     color: 'from-amber-600 to-yellow-500',
     image: '/catenaccio.webp'
   },
   {
     id: 2,
     title: 'Pausa del Pánico',
-    description: 'Tienes el poder absoluto de pausar el partido de tu rival 1 vez, en el momento que tú decidas. ¡Rompe su concentración!',
+    description: 'SUERTE, Tienes el poder absoluto de pausar el partido de tu rival 1 vez, en el momento que tú decidas. ¡Rompe su concentración!',
     color: 'from-purple-600 to-indigo-500',
     image: '/pausa.webp'
   },
@@ -23,6 +23,13 @@ const PUNISHMENT_CARDS = [
     description: 'Tu rival debe hacerte un cambio al azar en el minuto 10 sin que tu veas la pantalla. ¡Que la suerte y su malicia decida quién entra!',
     color: 'from-red-600 to-rose-500',
     image: '/ciego.png'
+  },
+  {
+    id: 4,
+    title: 'Al revés',
+    description: 'Tienes que jugar el siguiente partido con los controles invertidos, es decir, patear con cuadrado y centrar con círculo.',
+    color: 'from-blue-600 to-cyan-400',
+    image: '/alreves.webp'
   }
 ]
 

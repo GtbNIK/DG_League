@@ -111,3 +111,52 @@
     animation: none;
   }
 }
+
+/* ============================================================
+   Beam de borde: brillo que gira por el borde de las cartas de
+   logro. Un gradiente cónico rota sobre un anillo de 1px (máscara
+   content-box) y se tiñe con el color del acento de cada logro
+   vía la variable --beam-color (definida inline por card).
+   ============================================================ */
+@property --beam-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.card-beam {
+  position: relative;
+}
+
+.card-beam::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--beam-angle),
+    transparent 0deg,
+    var(--beam-color, #34d399) 50deg,
+    transparent 100deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: beam-girar 3.5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes beam-girar {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+/* Accesibilidad: sin giro si el usuario prefiere movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .card-beam::before {
+    animation: none;
+  }
+}

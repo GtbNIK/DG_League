@@ -1,9 +1,15 @@
 import { useLocalStorage } from "./useLocalStorage";
 import { v4 as uuidv4 } from "uuid";
 import { TEAM_CATALOG } from "../utils/teamCatalog";
+import {
+    DRAW_PICK,
+    getGroupStandings,
+    getKnockoutBracket,
+    getPredictionStandings as getPredictionStandingsPura,
+} from "../utils/tournamentLogic";
 
 const initialState = {
-  phase: "setup", // 'setup' | 'draft' | 'group' | 'knockout'
+  phase: "setup", // 'setup' | 'draft' | 'drawn' | 'group' | 'knockout'
   onboardingDone: false, // Si ya pasó por la pantalla de inicio (landing)
   players: [],
   matches: [],
@@ -91,7 +97,8 @@ export function useTournament() {
       ...prev,
       groups: { A: groupA, B: groupB },
       matches,
-      phase: "group",
+      // Grupos sorteados: la previsualización los confirma con "Abrir torneo".
+      phase: "drawn",
     }));
   };
 
@@ -163,6 +170,14 @@ export function useTournament() {
     }
   };
 
+    /**
+     * Abre oficialmente el torneo desde la previsualización de grupos
+     * (fase 'drawn'): solo pasa la fase a 'group', sin regenerar nada.
+     */
+    const openTournament = () => {
+        setData((prev) => ({ ...prev, phase: "group" }));
+    };
+
   // Funciones de Torneo
   const updateMatchScore = (id, score1, score2) => {
     setData((prev) => {
@@ -184,65 +199,13 @@ export function useTournament() {
     });
   };
 
-  const getStandings = (groupId) => {
-    const groupPlayers = data.groups[groupId];
-    const standings = groupPlayers.map((player) => ({
-      name: player,
-      points: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      goalDifference: 0,
-      played: 0,
-      won: 0,
-      drawn: 0,
-      lost: 0
-    }));
-
-    data.matches
-      .filter((m) => m.groupId === groupId && m.score1 !== null && m.score2 !== null)
-      .forEach((m) => {
-        const p1 = standings.find((s) => s.name === m.player1);
-        const p2 = standings.find((s) => s.name === m.player2);
-        
-        if (!p1 || !p2) return;
-
-        const s1 = parseInt(m.score1, 10);
-        const s2 = parseInt(m.score2, 10);
-
-        p1.played += 1;
-        p2.played += 1;
-        p1.goalsFor += s1;
-        p1.goalsAgainst += s2;
-        p1.goalDifference += (s1 - s2);
-        p2.goalsFor += s2;
-        p2.goalsAgainst += s1;
-        p2.goalDifference += (s2 - s1);
-
-        if (s1 > s2) {
-          p1.points += 3;
-          p1.won += 1;
-          p2.lost += 1;
-        } else if (s2 > s1) {
-          p2.points += 3;
-          p2.won += 1;
-          p1.lost += 1;
-        } else {
-          p1.points += 1;
-          p2.points += 1;
-          p1.drawn += 1;
-          p2.drawn += 1;
-        }
-      });
-
-    // Ordenar Puntos > Diferencia de Goles > Goles a Favor
-    standings.sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-      return b.goalsFor - a.goalsFor;
-    });
-
-    return standings;
-  };
+  /**
+   * Tabla de posiciones de un grupo (puntos > DG > GF, incluidos los jugadores
+   * sin partidos). Delega en la función pura `getGroupStandings`, extracción
+   * 1:1 del cálculo que vivía aquí.
+   */
+  const getStandings = (groupId) =>
+    getGroupStandings(data.matches, groupId, data.groups[groupId]);
 
   // Fichajes: intercambio 1x1 donde user entrega playerOut y toma playerIn
   // de la plantilla de targetPlayer (quien cede el jugador).
@@ -281,18 +244,33 @@ export function useTournament() {
 
     // Pronósticos sociales (Neil los anota por todos)
     /**
-     * Registra (o sobreescribe) el pronóstico de un amigo sobre un partido.
-     * Solo permitido mientras el partido no esté cerrado por 3-0.
+     * Registra (o sobreescribe) el pronóstico de un amigo sobre un partido de
+     * grupo o un cruce de eliminatorias (matchId 'ko-semi1' | 'ko-semi2' |
+     * 'ko-third' | 'ko-final'). Guardas: cruce sin participantes confirmados
+     * bloqueado (RF-5), nada cerrado por 3-0 admite picks (RF-9), en cruces no
+     * existe el empate (RF-4) y quien juega un partido o cruce no puede
+     * pronosticarlo (RF-13).
      *
-     * @param {string} matchId - Partido pronosticado.
+     * @param {string} matchId - Partido pronosticado, o 'ko-*' para un cruce.
      * @param {string} player - Amigo que pronostica.
-     * @param {string} pick - Nombre del jugador al que se ve como ganador.
+     * @param {string} pick - Nombre del ganador previsto, o 'empate' en grupos.
      */
     const addPrediction = (matchId, player, pick) => {
         setData((prev) => {
-            const match = prev.matches.find((m) => m.id === matchId);
-            if (!match || match.closed) return prev;
-            // Un amigo tiene un único pick por partido: se descarta el anterior.
+            if (matchId.startsWith("ko-")) {
+                const cruce = getKnockoutBracket(prev.matches, prev.groups, prev.knockout).find(
+                    (c) => c.id === matchId
+                );
+                if (!cruce || !cruce.confirmed) return prev; // RF-5: cruce sin confirmar
+                if (cruce.closed) return prev; // RF-9: cruce cerrado por 3-0
+                if (pick === DRAW_PICK) return prev; // RF-4: en cruces solo 2 opciones
+                if (player === cruce.p1 || player === cruce.p2) return prev; // RF-13: quien juega, no vota
+            } else {
+                const match = prev.matches.find((m) => m.id === matchId);
+                if (!match || match.closed) return prev; // RF-9 (comportamiento actual)
+                if (player === match.player1 || player === match.player2) return prev; // RF-13 (nuevo en grupos)
+            }
+            // Un amigo tiene un único pick por partido o cruce: se descarta el anterior.
             const others = prev.predictions.filter(
                 (p) => !(p.matchId === matchId && p.player === player)
             );
@@ -316,38 +294,15 @@ export function useTournament() {
     };
 
     /**
-     * Tabla paralela de aciertos de pronósticos. Solo puntúan partidos con
-     * marcador ingresado; los empates no dan puntos a nadie.
+     * Tabla de aciertos de la quiniela con subtotales por fase (Grupos /
+     * Eliminatorias / TOTAL). Delega en la función pura
+     * `getPredictionStandings`, con paridad exacta sobre los picks de grupos
+     * existentes respecto al cálculo que vivía aquí (RNF-3).
      *
-     * @returns {Array<{name: string, hits: number, total: number}>} Ranking ordenado.
+     * @returns {Array<{name: string, group: {hits: number, total: number}, ko: {hits: number, total: number}, total: number}>} Ranking ordenado.
      */
-    const getPredictionStandings = () => {
-        const playedById = new Map(
-            data.matches
-                .filter((m) => m.score1 !== null && m.score2 !== null)
-                .map((m) => [m.id, m])
-        );
-
-        /** @type {Map<string, {name: string, hits: number, total: number}>} */
-        const table = new Map();
-        data.predictions.forEach((pred) => {
-            const row = table.get(pred.player) || { name: pred.player, hits: 0, total: 0 };
-            const match = playedById.get(pred.matchId);
-            if (match) {
-                row.total += 1;
-                const s1 = parseInt(match.score1, 10);
-                const s2 = parseInt(match.score2, 10);
-                const winner =
-                    s1 > s2 ? match.player1 : s2 > s1 ? match.player2 : null;
-                if (winner && winner === pred.pick) row.hits += 1;
-            }
-            table.set(pred.player, row);
-        });
-
-        return [...table.values()].sort(
-            (a, b) => b.hits - a.hits || a.name.localeCompare(b.name)
-        );
-    };
+    const getPredictionStandings = () =>
+        getPredictionStandingsPura(data.matches, data.groups, data.knockout, data.predictions);
 
     const resetData = () => {
     if (confirm("¿Seguro que quieres borrar todo el torneo y empezar de cero?")) {
@@ -364,6 +319,7 @@ export function useTournament() {
     pickTeam,
     pickRandomTeam,
     startLeague,
+    openTournament,
     generateGroupsAndMatches,
     updateMatchScore,
     updateKnockoutScore,

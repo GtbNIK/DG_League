@@ -4,6 +4,7 @@ import BottomNav from './components/BottomNav'
 import LandingView from './views/LandingView'
 import SetupView from './views/SetupView'
 import DraftView from './views/DraftView'
+import GroupsPreviewView from './views/GroupsPreviewView'
 import TournamentView from './views/TournamentView'
 import PredictionsView from './views/PredictionsView'
 import RulesView from './views/RulesView'
@@ -30,6 +31,11 @@ function App() {
 
     if (phase === 'draft') {
       return <DraftView tournament={tournament} />
+    }
+
+    // Previsualización de grupos recién sorteados, antes de abrir el torneo.
+    if (phase === 'drawn') {
+      return <GroupsPreviewView tournament={tournament} />
     }
 
     switch (currentTab) {

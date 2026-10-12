@@ -10,7 +10,7 @@ App **React frontend-only** para administrar una liga de fútbol virtual entre a
   - `src/hooks/useTournament.js` — hook central: estado completo del torneo y todas las mutaciones.
   - `src/hooks/useLocalStorage.js` — persistencia genérica en `localStorage`.
   - `src/utils/tournamentLogic.js` — lógica pura del torneo.
-  - `src/views/` — pantallas: Setup, Tournament, Predictions, Rules, LoserCards, Achievements.
+  - `src/views/` — pantallas: Landing (onboarding), Setup, Draft, GroupsPreview (puente entre sorteo y torneo), Tournament, Predictions, Rules, LoserCards, Achievements.
   - `src/components/BottomNav.jsx` — navegación inferior móvil.
   - `src/index.css` — tema Tailwind 4 vía `@theme` (no existe `tailwind.config.js`).
 - Raíz del repo: solo scaffolds antiguos (`package.json` placeholder sin deps, `index.html`, `postcss.config.js`). **Ignorar; no agregar dependencias ahí.**
@@ -30,7 +30,7 @@ No hay tests configurados (`npm test` no existe).
 ## Arquitectura y estado
 
 - El estado global es un único objeto persistido bajo la clave `dg_league_state`, gestionado por `useTournament()`. Las vistas reciben el objeto `tournament` como prop y **nunca** mutan el estado directamente: solo llaman a las acciones del hook.
-- Fases del torneo: `'setup' | 'group' | 'knockout'`; `App.jsx` hace render condicional según la fase y controla el tab activo con `BottomNav`.
+- Fases del torneo: `'setup' | 'draft' | 'drawn' | 'group' | 'knockout'`; `App.jsx` hace render condicional según la fase y controla el tab activo con `BottomNav`. La fase `'drawn'` es la previsualización de grupos recién sorteados: se confirma con "Abrir torneo" (`openTournament()`), que pasa a `'group'`.
 - **Migración de esquema**: al añadir un campo nuevo al estado, agregarlo también a `initialState` en `useTournament.js`. La unión `{ ...initialState, ...storedData }` hace que estados viejos guardados hereden los campos nuevos.
 - IDs con `uuid` (v4). Íconos con `lucide-react`. Clases con `clsx` + `tailwind-merge`.
 

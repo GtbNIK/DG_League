@@ -163,6 +163,25 @@ export function getAchievements(matches) {
 /** Valor reservado del pick de empate; solo válido en fase de grupos. */
 export const DRAW_PICK = 'empate';
 
+/**
+ * Regla social DG: un marcador 3-0 (en cualquier sentido) es un "nocaut".
+ * La app solo lo MUESTRA como insignia informativa; el cumplimiento de la
+ * regla (castigos, ventajas en el siguiente cruce...) lo aplican los
+ * jugadores entre ellos. NUNCA bloquea la edición del marcador ni los
+ * pronósticos (lección del 1er torneo: un 3-0 mal ingresado quedó
+ * congelado y alteró la tabla y el resto del cuadro).
+ *
+ * @param {number|string|null} score1 - Goles del participante 1.
+ * @param {number|string|null} score2 - Goles del participante 2.
+ * @returns {boolean} true si el marcador completo es exactamente 3-0 o 0-3.
+ */
+export function isBlowout(score1, score2) {
+    if (score1 === null || score2 === null) return false;
+    const s1 = parseInt(score1, 10);
+    const s2 = parseInt(score2, 10);
+    return (s1 === 3 && s2 === 0) || (s2 === 3 && s1 === 0);
+}
+
 /** Etapas fijas del cuadro eliminatorio, en orden de juego. */
 export const KO_STAGES = ['semi1', 'semi2', 'third', 'final'];
 

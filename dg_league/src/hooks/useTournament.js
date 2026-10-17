@@ -178,26 +178,21 @@ export function useTournament() {
         setData((prev) => ({ ...prev, phase: "group" }));
     };
 
-  // Funciones de Torneo
-  const updateMatchScore = (id, score1, score2) => {
-    setData((prev) => {
-      const newMatches = prev.matches.map((m) => {
-        if (m.id === id) {
-          // Evaluar nocaut 3-0 pedido por Neil
-          let isClosed = false;
-          if (
-            (score1 === 3 && score2 === 0) ||
-            (score2 === 3 && score1 === 0)
-          ) {
-            isClosed = true;
-          }
-          return { ...m, score1, score2, closed: isClosed };
-        }
-        return m;
-      });
-      return { ...prev, matches: newMatches };
-    });
-  };
+    // Funciones de Torneo
+    // La regla del nocaut 3-0 es SOCIAL: la aplican los jugadores y la app
+    // solo la muestra como insignia informativa (isBlowout). Ningún marcador
+    // se bloquea jamás (lección del 1er torneo: un 3-0 mal ingresado quedaba
+    // congelado y arruinaba tabla y cruces). El campo `closed` se conserva
+    // como legacy y toda edición lo resetea, de modo que estados viejos
+    // guardados con closed:true se reabren al tocarlos.
+    const updateMatchScore = (id, score1, score2) => {
+        setData((prev) => ({
+            ...prev,
+            matches: prev.matches.map((m) =>
+                m.id === id ? { ...m, score1, score2, closed: false } : m
+            ),
+        }));
+    };
 
   /**
    * Tabla de posiciones de un grupo (puntos > DG > GF, incluidos los jugadores
@@ -227,19 +222,14 @@ export function useTournament() {
   };
 
   const updateKnockoutScore = (stage, score1, score2) => {
-    setData((prev) => {
-      let isClosed = false;
-      if ((score1 === 3 && score2 === 0) || (score2 === 3 && score1 === 0)) {
-        isClosed = true;
+    setData((prev) => ({
+      ...prev,
+      knockout: {
+        ...prev.knockout,
+        // `closed` legacy en false: la regla del 3-0 la aplican los jugadores.
+        [stage]: { score1, score2, closed: false }
       }
-      return {
-        ...prev,
-        knockout: {
-          ...prev.knockout,
-          [stage]: { score1, score2, closed: isClosed }
-        }
-      };
-    });
+    }));
   };
 
     // Pronósticos sociales (Neil los anota por todos)
@@ -247,9 +237,9 @@ export function useTournament() {
      * Registra (o sobreescribe) el pronóstico de un amigo sobre un partido de
      * grupo o un cruce de eliminatorias (matchId 'ko-semi1' | 'ko-semi2' |
      * 'ko-third' | 'ko-final'). Guardas: cruce sin participantes confirmados
-     * bloqueado (RF-5), nada cerrado por 3-0 admite picks (RF-9), en cruces no
-     * existe el empate (RF-4) y quien juega un partido o cruce no puede
-     * pronosticarlo (RF-13).
+     * bloqueado (RF-5), en cruces no existe el empate (RF-4) y quien juega un
+     * partido o cruce no puede pronosticarlo (RF-13). Un 3-0 NO bloquea nada:
+     * la regla del nocaut es social y los marcadores siempre son corregibles.
      *
      * @param {string} matchId - Partido pronosticado, o 'ko-*' para un cruce.
      * @param {string} player - Amigo que pronostica.
@@ -262,12 +252,11 @@ export function useTournament() {
                     (c) => c.id === matchId
                 );
                 if (!cruce || !cruce.confirmed) return prev; // RF-5: cruce sin confirmar
-                if (cruce.closed) return prev; // RF-9: cruce cerrado por 3-0
                 if (pick === DRAW_PICK) return prev; // RF-4: en cruces solo 2 opciones
                 if (player === cruce.p1 || player === cruce.p2) return prev; // RF-13: quien juega, no vota
             } else {
                 const match = prev.matches.find((m) => m.id === matchId);
-                if (!match || match.closed) return prev; // RF-9 (comportamiento actual)
+                if (!match) return prev; // Partido inexistente
                 if (player === match.player1 || player === match.player2) return prev; // RF-13 (nuevo en grupos)
             }
             // Un amigo tiene un único pick por partido o cruce: se descarta el anterior.

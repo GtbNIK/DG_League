@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion as Motion } from 'motion/react'
 import TeamTag from '../components/TeamTag'
-import { getKnockoutBracket } from '../utils/tournamentLogic'
+import { getKnockoutBracket, isBlowout } from '../utils/tournamentLogic'
 
 export default function TournamentView({ tournament }) {
     const { data, getStandings, updateMatchScore, updateKnockoutScore } = tournament
@@ -15,17 +15,23 @@ export default function TournamentView({ tournament }) {
   const currentGroupMatches = matches.filter(m => m.groupId === activeGroup)
   const currentStandings = activeGroup === 'A' ? standingsA : (activeGroup === 'B' ? standingsB : [])
 
+  // Convierte el texto del input a marcador válido: '' → null (partido sin
+  // jugar). Negativos y valores no numéricos también colapsan a null para no
+  // corromper la tabla (una diferencia de goles negativa sería un dato inválido).
+  const toScore = (value) => {
+    if (value === '' || value === null || value === undefined) return null
+    const n = parseInt(value, 10)
+    return Number.isNaN(n) || n < 0 ? null : n
+  }
+
+  // Los marcadores SIEMPRE son corregibles: la regla del nocaut 3-0 es social
+  // (la aplican los jugadores) y la app solo la destaca visualmente (isBlowout).
   const handleScoreChange = (match, p1Score, p2Score) => {
-    if (match.closed) return // Si está cerrado por 3-0, no se puede cambiar
-    const s1 = p1Score === '' ? null : parseInt(p1Score)
-    const s2 = p2Score === '' ? null : parseInt(p2Score)
-    updateMatchScore(match.id, s1, s2)
+    updateMatchScore(match.id, toScore(p1Score), toScore(p2Score))
   }
 
   const handleKnockoutScoreChange = (stage, p1Score, p2Score) => {
-    const s1 = p1Score === '' ? null : parseInt(p1Score)
-    const s2 = p2Score === '' ? null : parseInt(p2Score)
-    updateKnockoutScore(stage, s1, s2)
+    updateKnockoutScore(stage, toScore(p1Score), toScore(p2Score))
   }
 
   // Única fuente de verdad del cuadro: participantes (reales o placeholder),
@@ -118,16 +124,16 @@ export default function TournamentView({ tournament }) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className={`flex items-center justify-between p-3 rounded-md border transition-all duration-200 ${match.closed ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-arena border-emerald-500/25 hover:border-emerald-500/50 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(2,6,23,0.6)]'}`}
+                    className={`flex items-center justify-between p-3 rounded-md border transition-all duration-200 ${isBlowout(match.score1, match.score2) ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-arena border-emerald-500/25 hover:border-emerald-500/50 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(2,6,23,0.6)]'}`}
                 >
                   <div className="flex-1 flex flex-col items-end text-right font-medium text-base text-ink pr-3 min-w-0 max-w-[40%]">
                     <span className="truncate max-w-full">{match.player1}</span>
                     <TeamTag player={match.player1} draftPicks={draftPicks} />
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <input type="number" min="0" max="20" value={match.score1 ?? ''} onChange={(e) => handleScoreChange(match, e.target.value, match.score2)} disabled={match.closed} className="w-12 h-12 bg-arena border border-line rounded-md text-center font-display font-bold text-xl tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)] disabled:opacity-100 disabled:text-emerald-400" />
+                    <input type="number" min="0" max="20" value={match.score1 ?? ''} onChange={(e) => handleScoreChange(match, e.target.value, match.score2)} className="w-12 h-12 bg-arena border border-line rounded-md text-center font-display font-bold text-xl tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)]" />
                     <span className="text-muted font-semibold text-[11px]">VS</span>
-                    <input type="number" min="0" max="20" value={match.score2 ?? ''} onChange={(e) => handleScoreChange(match, match.score1, e.target.value)} disabled={match.closed} className="w-12 h-12 bg-arena border border-line rounded-md text-center font-display font-bold text-xl tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)] disabled:opacity-100 disabled:text-emerald-400" />
+                    <input type="number" min="0" max="20" value={match.score2 ?? ''} onChange={(e) => handleScoreChange(match, match.score1, e.target.value)} className="w-12 h-12 bg-arena border border-line rounded-md text-center font-display font-bold text-xl tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)]" />
                   </div>
                   <div className="flex-1 flex flex-col items-start text-left font-medium text-base text-ink pl-3 min-w-0 max-w-[40%]">
                     <span className="truncate max-w-full">{match.player2}</span>
@@ -162,9 +168,9 @@ export default function TournamentView({ tournament }) {
                       <TeamTag player={cruce.p1} draftPicks={draftPicks} />
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <input type="number" min="0" max="20" value={cruce.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange(cruce.stage, e.target.value, cruce.score2)} disabled={cruce.closed} className={`w-10 h-10 border rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)] disabled:opacity-100 ${cruce.stage === 'final' ? 'bg-arena border-amber-500/50' : 'bg-arena border-line'}`} />
+                      <input type="number" min="0" max="20" value={cruce.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange(cruce.stage, e.target.value, cruce.score2)} className={`w-10 h-10 border rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)] ${cruce.stage === 'final' ? 'bg-arena border-amber-500/50' : 'bg-arena border-line'}`} />
                       <span className="text-muted font-semibold text-[11px]">VS</span>
-                      <input type="number" min="0" max="20" value={cruce.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange(cruce.stage, cruce.score1, e.target.value)} disabled={cruce.closed} className={`w-10 h-10 border rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)] disabled:opacity-100 ${cruce.stage === 'final' ? 'bg-arena border-amber-500/50' : 'bg-arena border-line'}`} />
+                      <input type="number" min="0" max="20" value={cruce.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange(cruce.stage, cruce.score1, e.target.value)} className={`w-10 h-10 border rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400 focus:shadow-[0_0_20px_rgba(16,185,129,0.35)] ${cruce.stage === 'final' ? 'bg-arena border-amber-500/50' : 'bg-arena border-line'}`} />
                     </div>
                     <div className="flex-1 flex flex-col items-start text-left font-semibold text-sm pl-3 min-w-0 max-w-[40%]">
                       <span className={`truncate max-w-full ${cruce.winner === cruce.p2 ? 'text-ink' : 'text-muted'}`}>{cruce.p2}</span>
@@ -189,9 +195,9 @@ export default function TournamentView({ tournament }) {
                         <TeamTag player={semi1.p1} draftPicks={draftPicks} />
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <input type="number" min="0" max="20" value={semi1.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi1', e.target.value, semi1.score2)} disabled={semi1.closed} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
+                        <input type="number" min="0" max="20" value={semi1.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi1', e.target.value, semi1.score2)} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
                         <span className="text-muted font-semibold text-[11px]">VS</span>
-                        <input type="number" min="0" max="20" value={semi1.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi1', semi1.score1, e.target.value)} disabled={semi1.closed} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
+                        <input type="number" min="0" max="20" value={semi1.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi1', semi1.score1, e.target.value)} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
                       </div>
                       <div className="flex-1 flex flex-col items-start text-left font-semibold text-sm pl-3 min-w-0">
                         <span className={`truncate max-w-full ${semi1.winner === semi1.p2 ? 'text-ink' : 'text-muted'}`}>{semi1.p2}</span>
@@ -210,9 +216,9 @@ export default function TournamentView({ tournament }) {
                         <TeamTag player={cruceFinal.p1} draftPicks={draftPicks} />
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <input type="number" min="0" max="20" value={cruceFinal.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('final', e.target.value, cruceFinal.score2)} disabled={cruceFinal.closed} className="w-10 h-10 bg-arena border border-amber-500/50 text-amber-300 rounded-md text-center font-display font-bold text-lg tabular-nums focus:outline-none focus:border-amber-400" />
+                        <input type="number" min="0" max="20" value={cruceFinal.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('final', e.target.value, cruceFinal.score2)} className="w-10 h-10 bg-arena border border-amber-500/50 text-amber-300 rounded-md text-center font-display font-bold text-lg tabular-nums focus:outline-none focus:border-amber-400" />
                         <span className="text-amber-400 font-semibold text-[11px]">VS</span>
-                        <input type="number" min="0" max="20" value={cruceFinal.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('final', cruceFinal.score1, e.target.value)} disabled={cruceFinal.closed} className="w-10 h-10 bg-arena border border-amber-500/50 text-amber-300 rounded-md text-center font-display font-bold text-lg tabular-nums focus:outline-none focus:border-amber-400" />
+                        <input type="number" min="0" max="20" value={cruceFinal.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('final', cruceFinal.score1, e.target.value)} className="w-10 h-10 bg-arena border border-amber-500/50 text-amber-300 rounded-md text-center font-display font-bold text-lg tabular-nums focus:outline-none focus:border-amber-400" />
                       </div>
                       <div className="flex-1 flex flex-col items-start text-left font-semibold text-sm pl-3 min-w-0">
                         <span className={`truncate max-w-full ${cruceFinal.winner === cruceFinal.p2 ? 'text-ink' : 'text-amber-200/70'}`}>{cruceFinal.p2}</span>
@@ -229,9 +235,9 @@ export default function TournamentView({ tournament }) {
                         <TeamTag player={cruceTercero.p1} draftPicks={draftPicks} />
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <input type="number" min="0" max="20" value={cruceTercero.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('third', e.target.value, cruceTercero.score2)} disabled={cruceTercero.closed} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
+                        <input type="number" min="0" max="20" value={cruceTercero.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('third', e.target.value, cruceTercero.score2)} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
                         <span className="text-muted font-semibold text-[11px]">VS</span>
-                        <input type="number" min="0" max="20" value={cruceTercero.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('third', cruceTercero.score1, e.target.value)} disabled={cruceTercero.closed} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
+                        <input type="number" min="0" max="20" value={cruceTercero.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('third', cruceTercero.score1, e.target.value)} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
                       </div>
                       <div className="flex-1 flex flex-col items-start text-left font-semibold text-sm pl-3 min-w-0">
                         <span className={`truncate max-w-full ${cruceTercero.winner === cruceTercero.p2 ? 'text-ink' : 'text-muted'}`}>{cruceTercero.p2}</span>
@@ -250,9 +256,9 @@ export default function TournamentView({ tournament }) {
                         <TeamTag player={semi2.p1} draftPicks={draftPicks} />
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <input type="number" min="0" max="20" value={semi2.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi2', e.target.value, semi2.score2)} disabled={semi2.closed} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
+                        <input type="number" min="0" max="20" value={semi2.score1 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi2', e.target.value, semi2.score2)} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
                         <span className="text-muted font-semibold text-[11px]">VS</span>
-                        <input type="number" min="0" max="20" value={semi2.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi2', semi2.score1, e.target.value)} disabled={semi2.closed} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
+                        <input type="number" min="0" max="20" value={semi2.score2 ?? ''} onChange={(e) => handleKnockoutScoreChange('semi2', semi2.score1, e.target.value)} className="w-10 h-10 bg-arena border border-line rounded-md text-center font-display font-bold text-lg tabular-nums text-emerald-400 focus:outline-none focus:border-emerald-400" />
                       </div>
                       <div className="flex-1 flex flex-col items-start text-left font-semibold text-sm pl-3 min-w-0">
                         <span className={`truncate max-w-full ${semi2.winner === semi2.p2 ? 'text-ink' : 'text-muted'}`}>{semi2.p2}</span>

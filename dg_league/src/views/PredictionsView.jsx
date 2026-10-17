@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { motion as Motion } from 'motion/react'
-import { ChevronDown, ChevronUp, Lock, Trash2, Target } from 'lucide-react'
+import { ChevronDown, ChevronUp, Zap, Trash2, Target } from 'lucide-react'
 import TeamTag from '../components/TeamTag'
-import { DRAW_PICK, getKnockoutBracket, getPickOptions } from '../utils/tournamentLogic'
+import { DRAW_PICK, getKnockoutBracket, getPickOptions, isBlowout } from '../utils/tournamentLogic'
 
 /**
  * Devuelve el primer nombre de un jugador para etiquetas cortas.
@@ -17,9 +17,10 @@ const etiquetaPick = (option) => (option === DRAW_PICK ? 'Empate' : shortName(op
 /**
  * Vista de pronósticos: registro manual (lo anota Neil por todos) de la
  * predicción de cada amigo, organizada en Fase de Grupos, Eliminatorias y
- * Tabla (RF-10). En grupos cada partido abierto ofrece local, empate o
- * visita (RF-1); quien juega un partido no aparece como votante (RF-13) y
- * el total posible del contador resta a sus dos participantes (RF-14).
+ * Tabla (RF-10). En grupos cada partido ofrece local, empate o visita
+ * (RF-1); quien juega un partido no aparece como votante (RF-13) y el total
+ * posible del contador resta a sus dos participantes (RF-14). Un 3-0 solo
+ * destaca el partido con una insignia (regla social, nunca bloquea picks).
  */
 export default function PredictionsView({ tournament }) {
     const { data, addPrediction, removePrediction, getPredictionStandings } =
@@ -166,7 +167,7 @@ export default function PredictionsView({ tournament }) {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                                         className={`bg-surface border rounded-2xl overflow-hidden transition-all duration-200 ${
-                                            match.closed
+                                            isBlowout(match.score1, match.score2)
                                                 ? 'bg-emerald-500/10 border-emerald-500/50'
                                                 : 'border-emerald-500/25 hover:border-emerald-500/50 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(2,6,23,0.6)]'
                                         }`}
@@ -174,7 +175,6 @@ export default function PredictionsView({ tournament }) {
                                         {/* Cabecera del partido */}
                                         <button
                                             onClick={() => toggleExpand(match.id)}
-                                            disabled={match.closed}
                                             className="w-full flex items-center justify-between p-3 text-left"
                                         >
                                             <span className="flex-1 flex flex-col items-end text-right font-semibold text-sm text-ink pr-2 min-w-0 max-w-[38%]">
@@ -187,29 +187,26 @@ export default function PredictionsView({ tournament }) {
                                                         {match.score1}-{match.score2}
                                                     </span>
                                                 )}
-                                                {match.closed ? (
-                                                    <Lock size={14} className="text-emerald-400" />
+                                                {isBlowout(match.score1, match.score2) ? (
+                                                    <Zap size={14} className="text-emerald-400" />
                                                 ) : (
-                                                    <>
-                                                        <Target size={14} />
-                                                        {picks}/{totalPosible}
-                                                    </>
+                                                    <Target size={14} />
                                                 )}
+                                                {picks}/{totalPosible}
                                             </span>
                                             <span className="flex-1 flex flex-col items-start text-left font-semibold text-sm text-ink pl-2 min-w-0 max-w-[38%]">
                                                 <span className="truncate max-w-full">{match.player2}</span>
                                                 <TeamTag player={match.player2} draftPicks={draftPicks} />
                                             </span>
-                                            {!match.closed &&
-                                                (isExpanded ? (
-                                                    <ChevronUp size={16} className="text-muted ml-1" />
-                                                ) : (
-                                                    <ChevronDown size={16} className="text-muted ml-1" />
-                                                ))}
+                                            {isExpanded ? (
+                                                <ChevronUp size={16} className="text-muted ml-1" />
+                                            ) : (
+                                                <ChevronDown size={16} className="text-muted ml-1" />
+                                            )}
                                         </button>
 
                                         {/* Registro de pronósticos por amigo, sin los 2 participantes (RF-13) */}
-                                        {isExpanded && !match.closed &&
+                                        {isExpanded &&
                                             panelDePicks(match.id, [match.player1, DRAW_PICK, match.player2])}
                                     </Motion.div>
                                 )
@@ -224,8 +221,8 @@ export default function PredictionsView({ tournament }) {
                     {bracket.map((cruce, idx) => {
                         const isExpanded = expandedId === cruce.id
                         const picks = countPicks(cruce.id)
-                        // Apuesta habilitada solo con ambos participantes confirmados y sin cerrar (RF-5, RF-9).
-                        const apuestaAbierta = cruce.confirmed && !cruce.closed
+                        // Apuesta habilitada solo con ambos participantes confirmados (RF-5).
+                        const apuestaAbierta = cruce.confirmed
                         // En cruces solo 2 opciones, sin empate (RF-4).
                         const opciones = getPickOptions(cruce.p1, cruce.p2, false)
 
@@ -236,7 +233,7 @@ export default function PredictionsView({ tournament }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                                 className={`bg-surface border rounded-2xl overflow-hidden transition-all duration-200 ${
-                                    cruce.closed
+                                    isBlowout(cruce.score1, cruce.score2)
                                         ? 'bg-emerald-500/10 border-emerald-500/50'
                                         : 'border-emerald-500/25 hover:border-emerald-500/50 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(2,6,23,0.6)]'
                                 }`}
@@ -262,15 +259,14 @@ export default function PredictionsView({ tournament }) {
                                                 {cruce.score1}-{cruce.score2}
                                             </span>
                                         )}
-                                        {cruce.closed ? (
-                                            <Lock size={14} className="text-emerald-400" />
-                                        ) : (
-                                            apuestaAbierta && (
-                                                <>
-                                                    <Target size={14} />
-                                                    {picks}/{totalPosible}
-                                                </>
-                                            )
+                                        {isBlowout(cruce.score1, cruce.score2) && (
+                                            <Zap size={14} className="text-emerald-400" />
+                                        )}
+                                        {apuestaAbierta && (
+                                            <>
+                                                <Target size={14} />
+                                                {picks}/{totalPosible}
+                                            </>
                                         )}
                                     </span>
                                     <span className={`flex-1 flex flex-col items-start text-left font-semibold text-sm pl-2 min-w-0 max-w-[38%] ${cruce.confirmedP2 ? 'text-ink' : 'text-muted'}`}>
@@ -285,11 +281,11 @@ export default function PredictionsView({ tournament }) {
                                         ))}
                                 </button>
 
-                                {/* Picks del cruce: solo con participantes confirmados y sin cerrar (RF-5, RF-9) */}
+                                {/* Picks del cruce: solo con participantes confirmados (RF-5) */}
                                 {isExpanded && apuestaAbierta && panelDePicks(cruce.id, opciones)}
 
                                 {/* Sin confirmar: sin botones, solo el aviso (RF-5) */}
-                                {!cruce.confirmed && !cruce.closed && (
+                                {!cruce.confirmed && (
                                     <p className="px-3 pb-3 text-[11px] text-muted italic text-center">
                                         Se habilita cuando se confirmen los clasificados.
                                     </p>

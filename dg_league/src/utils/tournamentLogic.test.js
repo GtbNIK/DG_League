@@ -15,6 +15,7 @@ import {
     getPickOptions,
     getPredictionStandings,
     getBestPredictor,
+    isBlowout,
 } from './tournamentLogic.js';
 
 /** Crea un partido de grupo con la forma exacta del estado global. */
@@ -154,12 +155,14 @@ describe('getKnockoutBracket', () => {
         assert.equal(final.confirmed, false);
     });
 
-    test('un 3-0 marca el cruce como cerrado y decide ganador', () => {
+    test('un 3-0 decide ganador y el flag closed (legacy) se expone tal cual', () => {
         const ko = knockoutVacio();
-        ko.semi1 = { score1: 3, score2: 0, closed: true };
+        ko.semi1 = { score1: 3, score2: 0, closed: false };
         const bracket = getKnockoutBracket([], { A: ['Ana', 'Beto'], B: ['Caro', 'Dana'] }, ko);
         const semi1 = bracket.find((cruce) => cruce.stage === 'semi1');
-        assert.equal(semi1.closed, true);
+        // `closed` es un campo legacy que ya nunca bloquea nada: la regla del
+        // nocaut 3-0 es social y la app solo la destaca con isBlowout.
+        assert.equal(semi1.closed, false);
         assert.equal(semi1.winner, 'Ana');
     });
 
@@ -169,6 +172,29 @@ describe('getKnockoutBracket', () => {
         const bracketDespues = getKnockoutBracket([partido('m1', 'A', 'Ana', 'Beto', 0, 2)], groups, knockoutVacio());
         assert.equal(bracketAntes[0].p1, 'Ana');
         assert.equal(bracketDespues[0].p1, 'Beto');
+    });
+});
+
+describe('isBlowout', () => {
+    test('detecta el nocaut 3-0 en cualquier sentido, con números o strings', () => {
+        assert.equal(isBlowout(3, 0), true);
+        assert.equal(isBlowout(0, 3), true);
+        assert.equal(isBlowout('3', '0'), true);
+        assert.equal(isBlowout('0', '3'), true);
+    });
+
+    test('marcadores incompletos o nulos nunca son nocaut', () => {
+        assert.equal(isBlowout(null, null), false);
+        assert.equal(isBlowout(3, null), false);
+        assert.equal(isBlowout(null, 0), false);
+    });
+
+    test('otros marcadores no son nocaut (ni goleadas mayores)', () => {
+        assert.equal(isBlowout(0, 0), false);
+        assert.equal(isBlowout(1, 0), false);
+        assert.equal(isBlowout(3, 1), false);
+        assert.equal(isBlowout(4, 0), false);
+        assert.equal(isBlowout(3, 3), false);
     });
 });
 
